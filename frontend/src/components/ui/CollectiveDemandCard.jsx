@@ -25,9 +25,9 @@ export default function CollectiveDemandCard({ demand, joined = false, onJoin, o
   const remaining = Math.max(demand.totalDemand - demand.matched, 0);
   const percent = Math.min(Math.round((demand.matched / demand.totalDemand) * 100), 100);
   const progressColor = demand.status === "matched" ? "full" : percent >= 60 ? "amber" : "green";
-  const savingsPercent = Math.round(
-    ((demand.marketPrice - demand.directPrice) / demand.marketPrice) * 100
-  );
+  const savingsPercent = demand.directPrice && demand.marketPrice 
+    ? Math.round(((demand.marketPrice - demand.directPrice) / demand.marketPrice) * 100)
+    : 0;
 
   return (
     <article className="rounded-2xl bg-canvas-raised border border-forest-800/10 p-5 sm:p-6 flex flex-col gap-4 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(22,38,28,0.08)]">
@@ -86,16 +86,26 @@ export default function CollectiveDemandCard({ demand, joined = false, onJoin, o
       {/* Footer: price + CTA */}
       <div className="flex items-center justify-between pt-1 border-t border-forest-800/[0.07]">
         <div className="font-mono">
-          <span className="text-lg font-semibold text-forest-950">
-            ₹{demand.directPrice}
-          </span>
-          <span className="text-xs text-ink-faint">/{demand.unit}</span>
-          <span className="ml-2 text-xs text-ink-faint line-through">
-            ₹{demand.marketPrice}
-          </span>
-          <span className="ml-1.5 text-[11px] font-semibold text-forest-600">
-            ({savingsPercent}% off)
-          </span>
+          {demand.directPrice ? (
+            <>
+              <span className="text-lg font-semibold text-forest-950">
+                ₹{demand.directPrice}
+              </span>
+              <span className="text-xs text-ink-faint">/{demand.unit}</span>
+              {demand.marketPrice && (
+                <>
+                  <span className="ml-2 text-xs text-ink-faint line-through">
+                    ₹{demand.marketPrice}
+                  </span>
+                  <span className="ml-1.5 text-[11px] font-semibold text-forest-600">
+                    ({savingsPercent}% off)
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="text-lg font-semibold text-ink-faint">Price not set</span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

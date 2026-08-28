@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, TrendingUp, CheckCircle2, AlertCircle, Info, Loader2, Sprout } from "lucide-react";
 import Button from "./Button";
 import DemandIntelligence from "./DemandIntelligence";
 import { fetchFulfillmentRecommendation } from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -11,12 +13,19 @@ function formatDate(iso) {
 }
 
 export default function FulfillmentOutlookModal({ open, demand, onClose }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [outlook, setOutlook] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (open && demand?._id) {
+      if (!user) {
+        setError("Not authenticated. Please log in.");
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       fetchFulfillmentRecommendation(demand._id)
@@ -24,7 +33,7 @@ export default function FulfillmentOutlookModal({ open, demand, onClose }) {
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     }
-  }, [open, demand]);
+  }, [open, demand, user]);
 
   if (!open || !demand) return null;
 
@@ -79,9 +88,21 @@ export default function FulfillmentOutlookModal({ open, demand, onClose }) {
           )}
 
           {error && (
-            <div className="rounded-xl bg-amber-50 p-4 text-xs text-amber-800 flex items-start gap-2">
-              <AlertCircle size={14} className="shrink-0 mt-0.5" />
-              <span>Could not load fulfillment outlook: {error}</span>
+            <div className="rounded-xl bg-amber-50 p-4 text-xs text-amber-800 flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                <span>Could not load fulfillment outlook: {error}</span>
+              </div>
+              {error.includes("Not authenticated") && (
+                <Button 
+                  variant="primary" 
+                  size="md" 
+                  onClick={() => navigate("/login")}
+                  className="w-full"
+                >
+                  Log in to continue
+                </Button>
+              )}
             </div>
           )}
 

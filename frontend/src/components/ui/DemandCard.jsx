@@ -16,9 +16,9 @@ export default function DemandCard({ item }) {
     Math.round((item.matched / item.collectiveDemand) * 100),
     100
   );
-  const savingsPercent = Math.round(
-    ((item.marketPrice - item.directPrice) / item.marketPrice) * 100
-  );
+  const savingsPercent = item.directPrice && item.marketPrice 
+    ? Math.round(((item.marketPrice - item.directPrice) / item.marketPrice) * 100)
+    : 0;
 
   const handleJoinDemand = () => {
     if (!user) {
@@ -38,7 +38,7 @@ export default function DemandCard({ item }) {
           <p className="text-xs text-ink-faint mt-0.5">{item.area}</p>
         </div>
         <span className="shrink-0 font-mono text-xs font-semibold text-forest-700 bg-forest-800/[0.08] rounded-full px-2.5 py-1">
-          {savingsPercent}% direct
+          {item.directPrice && item.marketPrice ? `${savingsPercent}% direct` : "Direct"}
         </span>
       </div>
 
@@ -77,9 +77,22 @@ export default function DemandCard({ item }) {
 
       <div className="flex items-center justify-between pt-1">
         <div className="font-mono">
-          <span className="text-lg font-semibold text-forest-950">₹{item.directPrice}</span>
-          <span className="text-xs text-ink-faint">/{item.unit}</span>
-          <span className="ml-2 text-xs text-ink-faint line-through">₹{item.marketPrice}</span>
+          {item.directPrice ? (
+            <>
+              <span className="text-lg font-semibold text-forest-950">₹{item.directPrice}</span>
+              <span className="text-xs text-ink-faint">/{item.unit}</span>
+              {item.marketPrice && (
+                <>
+                  <span className="ml-2 text-xs text-ink-faint line-through">₹{item.marketPrice}</span>
+                  <span className="ml-1.5 text-[11px] font-semibold text-forest-600">
+                    ({savingsPercent}% off)
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="text-lg font-semibold text-ink-faint">Price not set</span>
+          )}
         </div>
         <Button size="md" className="!px-4 !py-2 text-sm" onClick={handleJoinDemand}>
           Join Demand

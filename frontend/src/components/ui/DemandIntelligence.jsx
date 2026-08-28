@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sparkles, Loader2, AlertCircle, CheckCircle2, ShieldAlert, Clock, ArrowRight } from "lucide-react";
 import { fetchDemandIntelligence } from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
+import Button from "./Button";
 
 const OUTLOOK_STYLES = {
   LOW_RISK: {
@@ -27,12 +30,18 @@ const URGENCY_STYLES = {
 };
 
 export default function DemandIntelligence({ demandId, role = "CONSUMER" }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   async function handleAnalyze() {
     if (!demandId) return;
+    if (!user) {
+      setError("Not authenticated. Please log in.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -97,13 +106,24 @@ export default function DemandIntelligence({ demandId, role = "CONSUMER" }) {
             <AlertCircle size={14} className="shrink-0" />
             <span>{error}</span>
           </div>
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            className="self-start text-[11px] font-mono text-amber-900 underline underline-offset-2 hover:text-amber-700"
-          >
-            Try again
-          </button>
+          {error.includes("Not authenticated") ? (
+            <Button 
+              variant="primary" 
+              size="md" 
+              onClick={() => navigate("/login")}
+              className="w-full"
+            >
+              Log in to continue
+            </Button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              className="self-start text-[11px] font-mono text-amber-900 underline underline-offset-2 hover:text-amber-700"
+            >
+              Try again
+            </button>
+          )}
         </div>
       )}
 
