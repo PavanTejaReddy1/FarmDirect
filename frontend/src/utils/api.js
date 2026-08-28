@@ -9,7 +9,7 @@
  * to be set.
  */
 
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE = import.meta.env.VITE_API_URL || "https://farm-direct-nine.vercel.app/api";
 
 // ─── core helpers ────────────────────────────────────────────────────────────
 

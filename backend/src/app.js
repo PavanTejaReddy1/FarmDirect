@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/errorHandler");
+const connectDB = require("./config/db");
 
 const authRoutes       = require("./routes/authRoutes");
 const demandRoutes     = require("./routes/demandRoutes");
@@ -12,18 +13,25 @@ const aiRoutes         = require("./routes/aiRoutes");
 
 const app = express();
 
-// ── CORS — must allow credentials so the browser sends the cookie ─────────
+// ── CORS — allow credentials so browser sends cookies ─────────────────────
+const frontendUrl = process.env.FRONTEND_URL;
 const allowedOrigins = [
   "http://localhost:5173", // Vite default
   "http://localhost:4173", // Vite preview
   "http://localhost:3000",
+  "https://farm-direct-nine.vercel.app",
 ];
+
+if (frontendUrl && !allowedOrigins.includes(frontendUrl)) {
+  allowedOrigins.push(frontendUrl);
+}
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Allow requests with no Origin header (Postman, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no Origin header (Postman, curl, direct browser)
+      // or origins matching allowedOrigins list or any *.vercel.app domain
+      if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
         cb(null, true);
       } else {
         cb(new Error(`CORS: origin ${origin} not allowed.`));
@@ -36,6 +44,40 @@ app.use(
 // ── Core middleware ───────────────────────────────────────────────────────
 app.use(express.json());
 app.use(cookieParser());
+
+// ── Auto-connect DB middleware for serverless / Vercel ─────────────────────
+app.use(async (req, res, next) => {
+  try {
+    if (process.env.MONGODB_URI) {
+      await connectDB();
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Root welcome handler ──────────────────────────────────────────────────
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "FarmDirect API Server is running",
+    version: "1.0.0",
+    endpoints: {
+      health: "/api/health",
+      auth: "/api/auth",
+      demands: "/api/demands",
+      supplies: "/api/supplies",
+      commitments: "/api/commitments",
+      matching: "/api/matching",
+      ai: "/api/ai",
+    },
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ success: true, message: "FarmDirect API is running" });
+});
 
 // ── Health check ─────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
