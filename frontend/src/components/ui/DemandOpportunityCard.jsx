@@ -40,6 +40,10 @@ export default function DemandOpportunityCard({ opportunity, matchScore = 0, onV
   );
   const progressColor =
     opportunity.status === "matched" ? "full" : percent >= 60 ? "amber" : "green";
+  
+  const savingsPercent = opportunity.directPrice && opportunity.marketPrice 
+    ? Math.round(((opportunity.marketPrice - opportunity.directPrice) / opportunity.marketPrice) * 100)
+    : 0;
 
   return (
     <article className="rounded-2xl bg-canvas-raised border border-forest-800/10 p-5 sm:p-6 flex flex-col gap-4 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(22,38,28,0.08)]">
@@ -118,10 +122,24 @@ export default function DemandOpportunityCard({ opportunity, matchScore = 0, onV
       <div className="flex items-center justify-between pt-1 border-t border-forest-800/[0.07] gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="font-mono">
-            <span className="text-base font-semibold text-forest-950">
-              ₹{opportunity.directPrice}
-            </span>
-            <span className="text-xs text-ink-faint">/{opportunity.unit}</span>
+            {opportunity.directPrice ? (
+              <>
+                <span className="text-base font-semibold text-forest-950">
+                  ₹{opportunity.directPrice}
+                </span>
+                <span className="text-xs text-ink-faint">/{opportunity.unit}</span>
+                {opportunity.marketPrice && (
+                  <>
+                    <span className="ml-2 text-xs text-ink-faint line-through">₹{opportunity.marketPrice}</span>
+                    <span className="ml-1.5 text-[11px] font-semibold text-forest-600">
+                      ({savingsPercent}% off)
+                    </span>
+                  </>
+                )}
+              </>
+            ) : (
+              <span className="text-base font-semibold text-ink-faint">Price not set</span>
+            )}
           </div>
           <span
             className={`inline-flex items-center gap-1 font-mono text-[11px] font-semibold rounded-full px-2.5 py-1 ${matchColor(matchScore)}`}
