@@ -1,12 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, Search, Sparkles } from "lucide-react";
 import SectionHeading from "../ui/SectionHeading";
 import DemandCard from "../ui/DemandCard";
 import Button from "../ui/Button";
 import { demandItems, currentUserDemand } from "../../data/demand";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ConsumerPreview() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
+
+  const handleAddToDemand = () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/dashboard/consumer");
+    }
+  };
 
   return (
     <section id="for-consumers" className="px-5 sm:px-8 py-16 sm:py-24">
@@ -44,7 +56,7 @@ export default function ConsumerPreview() {
                 className="w-full rounded-full border border-forest-800/12 bg-canvas pl-11 pr-4 py-3 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-forest-600"
               />
             </div>
-            <Button variant="primary" size="md" className="sm:w-auto w-full">
+            <Button variant="primary" size="md" className="sm:w-auto w-full" onClick={handleAddToDemand}>
               <Sparkles size={15} strokeWidth={2} />
               Add to demand
             </Button>

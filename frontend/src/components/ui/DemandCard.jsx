@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * Shows one item's collective-demand progress: how much is needed in the
@@ -6,6 +8,9 @@ import Button from "./Button";
  * that consumers are contributing to a shared order, not just browsing.
  */
 export default function DemandCard({ item }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const remaining = Math.max(item.collectiveDemand - item.matched, 0);
   const percentMatched = Math.min(
     Math.round((item.matched / item.collectiveDemand) * 100),
@@ -14,6 +19,16 @@ export default function DemandCard({ item }) {
   const savingsPercent = Math.round(
     ((item.marketPrice - item.directPrice) / item.marketPrice) * 100
   );
+
+  const handleJoinDemand = () => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      // Redirect to consumer dashboard if authenticated
+      navigate("/dashboard/consumer");
+    }
+  };
 
   return (
     <div className="rounded-2xl bg-canvas-raised border border-forest-800/10 p-5 sm:p-6 flex flex-col gap-4">
@@ -66,7 +81,7 @@ export default function DemandCard({ item }) {
           <span className="text-xs text-ink-faint">/{item.unit}</span>
           <span className="ml-2 text-xs text-ink-faint line-through">₹{item.marketPrice}</span>
         </div>
-        <Button size="md" className="!px-4 !py-2 text-sm">
+        <Button size="md" className="!px-4 !py-2 text-sm" onClick={handleJoinDemand}>
           Join Demand
         </Button>
       </div>
