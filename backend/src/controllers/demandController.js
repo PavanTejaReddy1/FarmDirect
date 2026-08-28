@@ -22,7 +22,7 @@ async function getDemands(req, res, next) {
 // protect + authorizeRoles("CONSUMER") applied in the route file.
 async function createDemand(req, res, next) {
   try {
-    const { productName, category, quantity, unit, location, deliveryDate, note } = req.body;
+    const { productName, category, quantity, unit, location, deliveryDate, note, directPrice, marketPrice } = req.body;
 
     const demand = await Demand.create({
       productName,
@@ -36,6 +36,8 @@ async function createDemand(req, res, next) {
       consumerCount: 1,
       status: "OPEN",
       createdBy: req.user._id,        // identity from JWT, never from body
+      directPrice: directPrice || null,
+      marketPrice: marketPrice || null,
     });
 
     res.status(201).json({ success: true, data: demand });

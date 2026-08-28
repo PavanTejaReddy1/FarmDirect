@@ -44,6 +44,21 @@ function normaliseDemand(doc) {
     PARTIALLY_FULFILLED: "filling",
     FULFILLED: "matched",
   };
+  
+  // Generate default prices if not available (for existing data without prices)
+  const defaultPrices = {
+    "Vine Tomatoes": { direct: 34, market: 52 },
+    "Mixed Leafy Greens": { direct: 28, market: 45 },
+    "Yelakki Bananas": { direct: 42, market: 60 },
+    "Toor Dal": { direct: 110, market: 145 },
+    "Fresh Coriander": { direct: 8, market: 15 },
+    "Country Eggs": { direct: 185, market: 240 },
+    "Raw Mango": { direct: 55, market: 80 },
+    "Sona Masoori Rice": { direct: 58, market: 75 },
+  };
+  
+  const priceDefaults = defaultPrices[doc.productName] || { direct: 50, market: 70 };
+  
   return {
     id: doc._id,
     _id: doc._id,
@@ -57,8 +72,8 @@ function normaliseDemand(doc) {
       ? new Date(doc.deliveryDate).toISOString().slice(0, 10)
       : null,
     location: doc.location,
-    directPrice: doc.directPrice ?? null,
-    marketPrice: doc.marketPrice ?? null,
+    directPrice: doc.directPrice ?? priceDefaults.direct,
+    marketPrice: doc.marketPrice ?? priceDefaults.market,
     status: statusMap[doc.status] ?? "open",
     description: doc.note || "",
     // keep raw for join call
@@ -176,6 +191,8 @@ export default function ConsumerDashboard() {
         location: formData.location,
         deliveryDate: formData.deliveryDate,
         note: formData.note || "",
+        directPrice: formData.directPrice || null,
+        marketPrice: formData.marketPrice || null,
       };
       const created = await apiCreateDemand(body);
       const normalised = normaliseDemand(created);
@@ -194,6 +211,8 @@ export default function ConsumerDashboard() {
           deliveryDate: formData.deliveryDate,
           location: formData.location,
           note: formData.note || "",
+          directPrice: formData.directPrice || null,
+          marketPrice: formData.marketPrice || null,
           createdAt: new Date().toISOString().slice(0, 10),
         },
         ...prev,

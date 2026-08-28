@@ -48,6 +48,16 @@ const demandSchema = new mongoose.Schema(
       default: 1,
       min: [1, "Consumer count must be at least 1."],
     },
+    directPrice: {
+      type: Number,
+      default: null,
+      min: [0, "Direct price cannot be negative."],
+    },
+    marketPrice: {
+      type: Number,
+      default: null,
+      min: [0, "Market price cannot be negative."],
+    },
     status: {
       type: String,
       enum: {

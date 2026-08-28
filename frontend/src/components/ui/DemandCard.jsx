@@ -94,9 +94,18 @@ export default function DemandCard({ item }) {
             <span className="text-lg font-semibold text-ink-faint">Price not set</span>
           )}
         </div>
-        <Button size="md" className="!px-4 !py-2 text-sm" onClick={handleJoinDemand}>
-          Join Demand
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleJoinDemand}
+            className="text-xs font-mono font-medium text-forest-700 hover:text-forest-900 bg-forest-800/[0.06] hover:bg-forest-800/[0.12] rounded-full px-3 py-1.5 transition-colors"
+          >
+            View
+          </button>
+          <Button size="md" className="!px-4 !py-2 text-sm" onClick={handleJoinDemand}>
+            Join Demand
+          </Button>
+        </div>
       </div>
     </div>
   );

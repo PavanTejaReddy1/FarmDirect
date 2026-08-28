@@ -13,6 +13,8 @@ const EMPTY_FORM = {
   deliveryDate: "",
   location: "",
   note: "",
+  directPrice: "",
+  marketPrice: "",
 };
 
 function Field({ label, htmlFor, required, children }) {
@@ -81,6 +83,8 @@ export default function CreateDemandModal({ open, onClose, onSubmit }) {
     onSubmit({
       ...form,
       quantity: Number(form.quantity),
+      directPrice: form.directPrice ? Number(form.directPrice) : null,
+      marketPrice: form.marketPrice ? Number(form.marketPrice) : null,
       id: `my-${Date.now()}`,
       matched: 0,
       status: "open",
@@ -248,6 +252,34 @@ export default function CreateDemandModal({ open, onClose, onSubmit }) {
                 className={INPUT_CLS + " resize-none"}
               />
             </Field>
+
+            {/* Price information */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Direct price (₹)" htmlFor="cd-direct-price">
+                <input
+                  id="cd-direct-price"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="e.g. 34"
+                  value={form.directPrice}
+                  onChange={(e) => set("directPrice", e.target.value)}
+                  className={INPUT_CLS}
+                />
+              </Field>
+              <Field label="Market price (₹)" htmlFor="cd-market-price">
+                <input
+                  id="cd-market-price"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="e.g. 52"
+                  value={form.marketPrice}
+                  onChange={(e) => set("marketPrice", e.target.value)}
+                  className={INPUT_CLS}
+                />
+              </Field>
+            </div>
           </div>
 
           {/* Footer */}

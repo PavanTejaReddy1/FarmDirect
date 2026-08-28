@@ -1,7 +1,28 @@
 import { ArrowRight } from "lucide-react";
 import Button from "../ui/Button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function FinalCTA() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleConsumerClick = () => {
+    if (!user) {
+      navigate("/register");
+    } else {
+      navigate("/dashboard/consumer");
+    }
+  };
+
+  const handleFarmerClick = () => {
+    if (!user) {
+      navigate("/register");
+    } else {
+      navigate("/dashboard/farmer");
+    }
+  };
+
   return (
     <section className="px-5 sm:px-8 py-16 sm:py-24">
       <div className="mx-auto max-w-5xl rounded-3xl bg-forest-800 px-6 sm:px-14 py-14 sm:py-16 text-center relative overflow-hidden">
@@ -17,12 +38,12 @@ export default function FinalCTA() {
           your farm into a fairer, more direct order.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center relative">
-          <Button to="/consumer" variant="amber" size="lg">
+          <Button onClick={handleConsumerClick} variant="amber" size="lg">
             Start as Consumer
             <ArrowRight size={17} strokeWidth={2} />
           </Button>
           <Button
-            to="/farmer"
+            onClick={handleFarmerClick}
             variant="outline"
             size="lg"
             className="!border-canvas/25 !text-canvas hover:!bg-canvas/10"

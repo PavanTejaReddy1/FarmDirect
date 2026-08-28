@@ -20,7 +20,7 @@ const SIZES = {
  * <button> otherwise, so callers never have to pick manually.
  */
 const Button = forwardRef(function Button(
-  { variant = "primary", size = "md", to, className = "", children, ...rest },
+  { variant = "primary", size = "md", to, className = "", children, onClick, ...rest },
   ref
 ) {
   const classes = [
@@ -41,7 +41,7 @@ const Button = forwardRef(function Button(
   }
 
   return (
-    <button ref={ref} className={classes} {...rest}>
+    <button ref={ref} className={classes} onClick={onClick} type="button" {...rest}>
       {children}
     </button>
   );
