@@ -38,7 +38,7 @@ export default function DemandCard({ item }) {
           <p className="text-xs text-ink-faint mt-0.5">{item.area}</p>
         </div>
         <span className="shrink-0 font-mono text-xs font-semibold text-forest-700 bg-forest-800/[0.08] rounded-full px-2.5 py-1">
-          {item.directPrice && item.marketPrice ? `${savingsPercent}% direct` : "Direct"}
+          {item.directPrice && item.marketPrice ? `${savingsPercent}% off` : "Direct"}
         </span>
       </div>
 

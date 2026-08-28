@@ -38,7 +38,7 @@ function ProtectedRoute({ requiredRole, children }) {
 
   if (requiredRole && user.role !== requiredRole) {
     // Wrong role — send each user to their own dashboard
-    return <Navigate to={user.role === "FARMER" ? "/farmer" : "/consumer"} replace />;
+    return <Navigate to={user.role === "FARMER" ? "/dashboard/farmer" : "/dashboard/consumer"} replace />;
   }
 
   return children;
@@ -61,7 +61,23 @@ export default function AppRoutes() {
           }
         />
         <Route
+          path="/dashboard/consumer"
+          element={
+            <ProtectedRoute requiredRole="CONSUMER">
+              <ConsumerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/farmer"
+          element={
+            <ProtectedRoute requiredRole="FARMER">
+              <FarmerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/farmer"
           element={
             <ProtectedRoute requiredRole="FARMER">
               <FarmerDashboard />

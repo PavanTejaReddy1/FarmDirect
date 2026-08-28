@@ -24,7 +24,7 @@ export default function Login() {
       setSubmitting(true);
       const user = await login(email, password);
       // Redirect to the right dashboard based on role
-      navigate(user.role === "FARMER" ? "/farmer" : "/consumer", { replace: true });
+      navigate(user.role === "FARMER" ? "/dashboard/farmer" : "/dashboard/consumer", { replace: true });
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
     } finally {

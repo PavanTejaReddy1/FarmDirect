@@ -13,10 +13,13 @@ function sendTokenCookie(res, token) {
   const maxAge =
     parseInt(process.env.JWT_COOKIE_DAYS || "7", 10) * 24 * 60 * 60 * 1000;
 
+  // For cross-origin cookies (different frontend/backend domains), use sameSite: "none" and secure: true
+  const isCrossOrigin = process.env.SAME_SITE_NONE === "true" || process.env.NODE_ENV === "production";
+  
   res.cookie("fd_token", token, {
     httpOnly: true,           // not accessible from JS
-    secure: process.env.NODE_ENV === "production", // HTTPS only in prod
-    sameSite: "lax",          // CSRF protection, works with same-origin dev
+    secure: isCrossOrigin,    // HTTPS only for cross-origin or production
+    sameSite: isCrossOrigin ? "none" : "lax",  // "none" for cross-origin, "lax" for same-origin
     maxAge,
   });
 }
@@ -102,11 +105,14 @@ async function login(req, res, next) {
 
 // ── POST /api/auth/logout ─────────────────────────────────────────────────
 function logout(req, res) {
+  const isCrossOrigin = process.env.SAME_SITE_NONE === "true" || process.env.NODE_ENV === "production";
+  
   res.cookie("fd_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isCrossOrigin,
+    sameSite: isCrossOrigin ? "none" : "lax",
     maxAge: 0, // expire immediately
+    expires: new Date(0),
   });
   res.json({ success: true, data: null });
 }
