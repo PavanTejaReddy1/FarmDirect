@@ -1,4 +1,5 @@
 import { Share2, AtSign, Link2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../ui/Logo";
 
 const NAVIGATE = [
@@ -24,6 +25,25 @@ const SOCIALS = [
 ];
 
 function FooterColumn({ title, links }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  function handleClick(e, href) {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const id = href.slice(1);
+      if (location.pathname === "/") {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate(`/${href}`);
+      }
+    } else if (href.startsWith("/")) {
+      e.preventDefault();
+      navigate(href);
+    }
+  }
+
   return (
     <div>
       <h3 className="font-mono text-xs uppercase tracking-[0.12em] text-forest-300 mb-4">
@@ -33,7 +53,8 @@ function FooterColumn({ title, links }) {
         {links.map((link) => (
           <li key={link.label}>
             <a
-              href={link.href}
+              href={link.href.startsWith("#") ? (location.pathname === "/" ? link.href : `/${link.href}`) : link.href}
+              onClick={(e) => handleClick(e, link.href)}
               className="text-sm text-forest-200/80 hover:text-canvas transition-colors"
             >
               {link.label}

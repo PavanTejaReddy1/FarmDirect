@@ -2,12 +2,17 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 /**
- * protect — reads the JWT from the HTTP-only cookie, verifies it,
- * loads the user from the database, and attaches it to req.user.
+ * protect — reads the JWT from the HTTP-only cookie or Authorization header,
+ * verifies it, loads the user from the database, and attaches it to req.user.
  * Rejects with 401 if anything is missing or invalid.
  */
 async function protect(req, res, next) {
-  const token = req.cookies && req.cookies.fd_token;
+  let token = req.cookies && req.cookies.fd_token;
+
+  // Fallback to Bearer token in Authorization header if cross-site cookies are blocked
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
 
   if (!token) {
     return res.status(401).json({

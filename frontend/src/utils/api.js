@@ -5,18 +5,49 @@
  * Base URL comes from VITE_API_URL (.env).
  *
  * credentials: "include" is set globally so the HTTP-only JWT cookie is
- * automatically sent with every request — this is the only place it needs
- * to be set.
+ * automatically sent with every request. As a resilient fallback for cross-origin
+ * environments (where browsers may block third-party cookies), an Authorization
+ * header is also attached if an auth token is saved.
  */
 
 const BASE = import.meta.env.VITE_API_URL || "https://farm-direct-nine.vercel.app/api";
 
+function getAuthToken() {
+  try {
+    return localStorage.getItem("fd_token");
+  } catch {
+    return null;
+  }
+}
+
+function setAuthToken(token) {
+  try {
+    if (token) {
+      localStorage.setItem("fd_token", token);
+    } else {
+      localStorage.removeItem("fd_token");
+    }
+  } catch {
+    // Ignore storage errors in restricted iframe/browser modes
+  }
+}
+
 // ─── core helpers ────────────────────────────────────────────────────────────
 
 async function request(path, options = {}) {
+  const token = getAuthToken();
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  if (token && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${BASE}${path}`, {
-    credentials: "include",                 // always send the cookie
-    headers: { "Content-Type": "application/json", ...options.headers },
+    credentials: "include", // always send cookie
+    headers,
     ...options,
   });
 
@@ -48,9 +79,23 @@ export const checkHealth = () => get("/health");
 // Grouped as authApi so AuthContext can import a single namespace.
 
 export const authApi = {
-  register: (body) => post("/auth/register", body),
-  login: (email, password) => post("/auth/login", { email, password }),
-  logout: () => post("/auth/logout", {}),
+  register: async (body) => {
+    const data = await post("/auth/register", body);
+    if (data?.token) setAuthToken(data.token);
+    return data;
+  },
+  login: async (email, password) => {
+    const data = await post("/auth/login", { email, password });
+    if (data?.token) setAuthToken(data.token);
+    return data;
+  },
+  logout: async () => {
+    try {
+      return await post("/auth/logout", {});
+    } finally {
+      setAuthToken(null);
+    }
+  },
   getMe: () => get("/auth/me"),
 };
 
@@ -104,4 +149,3 @@ export const fetchMyOpportunities = () => get("/matching/my-opportunities");
 export const fetchDemandIntelligence = (demandId) =>
   get(`/ai/demands/${demandId}/intelligence`);
 export const getDemandIntelligence = fetchDemandIntelligence;
-

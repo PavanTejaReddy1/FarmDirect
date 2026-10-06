@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../ui/Logo";
 import Button from "../ui/Button";
 import { useAuth } from "../../context/AuthContext";
@@ -15,6 +15,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -34,6 +35,22 @@ export default function Navbar() {
     setMobileOpen(false);
     await logout();
     navigate("/", { replace: true });
+  }
+
+  function handleNavClick(e, href) {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      setMobileOpen(false);
+      const targetId = href.slice(1);
+      if (location.pathname === "/") {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        navigate(`/${href}`);
+      }
+    }
   }
 
   const dashboardPath = user?.role === "FARMER" ? "/farmer" : "/consumer";
@@ -58,7 +75,8 @@ export default function Navbar() {
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <a
-                href={link.href}
+                href={location.pathname === "/" ? link.href : `/${link.href}`}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="px-4 py-2 text-sm font-medium text-ink-soft hover:text-forest-900 rounded-full hover:bg-forest-800/[0.06] transition-colors"
               >
                 {link.label}
@@ -110,8 +128,8 @@ export default function Navbar() {
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
                 <a
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  href={location.pathname === "/" ? link.href : `/${link.href}`}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className="block px-3 py-3 text-base font-medium text-ink-soft hover:text-forest-900 rounded-lg hover:bg-forest-800/[0.06] transition-colors"
                 >
                   {link.label}

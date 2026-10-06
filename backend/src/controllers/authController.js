@@ -68,7 +68,7 @@ async function register(req, res, next) {
     const token = signToken(user._id);
     sendTokenCookie(res, token);
 
-    res.status(201).json({ success: true, data: { user: user.toSafeObject() } });
+    res.status(201).json({ success: true, data: { user: user.toSafeObject(), token } });
   } catch (err) {
     next(err);
   }
@@ -97,7 +97,7 @@ async function login(req, res, next) {
     const token = signToken(user._id);
     sendTokenCookie(res, token);
 
-    res.json({ success: true, data: { user: user.toSafeObject() } });
+    res.json({ success: true, data: { user: user.toSafeObject(), token } });
   } catch (err) {
     next(err);
   }

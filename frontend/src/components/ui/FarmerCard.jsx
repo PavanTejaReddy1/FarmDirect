@@ -1,5 +1,7 @@
 import { MapPin, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * Shows one nearby demand item from the farmer's side: what's required,
@@ -7,10 +9,23 @@ import Button from "./Button";
  * the number — the case for fulfilling it directly.
  */
 export default function FarmerCard({ item }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
   const coveragePercent = Math.min(
     Math.round((item.supplyAvailable / item.required) * 100),
     100
   );
+
+  const handleViewDemand = () => {
+    if (!user) {
+      navigate("/login");
+    } else if (user.role === "FARMER") {
+      navigate("/farmer");
+    } else {
+      navigate("/consumer");
+    }
+  };
 
   return (
     <div className="rounded-2xl bg-canvas-raised border border-forest-800/10 p-5 sm:p-6 flex flex-col gap-4">
@@ -60,7 +75,7 @@ export default function FarmerCard({ item }) {
           <Users size={13} strokeWidth={2} />
           {item.potentialBuyers} households behind this
         </p>
-        <Button variant="outline" size="md" className="!px-4 !py-2 text-sm">
+        <Button variant="outline" size="md" className="!px-4 !py-2 text-sm" onClick={handleViewDemand}>
           View Demand
         </Button>
       </div>

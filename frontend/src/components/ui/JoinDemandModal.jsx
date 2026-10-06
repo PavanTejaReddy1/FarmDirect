@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Users, CheckCircle2 } from "lucide-react";
+import { X, Users, CheckCircle2, Sprout } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 import ProgressBar from "./ProgressBar";
+import { useAuth } from "../../context/AuthContext";
 
 const INPUT_CLS =
   "w-full rounded-xl border border-forest-800/12 bg-canvas px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-forest-600 transition-colors";
 
 export default function JoinDemandModal({ open, demand, onClose, onJoin }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [qty, setQty] = useState("");
   const [error, setError] = useState("");
   const [joined, setJoined] = useState(false);
@@ -30,6 +34,7 @@ export default function JoinDemandModal({ open, demand, onClose, onJoin }) {
 
   if (!open || !demand) return null;
 
+  const isFarmer = user?.role === "FARMER";
   const remaining = Math.max(demand.totalDemand - demand.matched, 0);
   const percentMatched = Math.min(
     Math.round((demand.matched / demand.totalDemand) * 100),
@@ -44,6 +49,8 @@ export default function JoinDemandModal({ open, demand, onClose, onJoin }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    if (isFarmer) return;
+
     const n = Number(qty);
     if (!qty || isNaN(n) || n <= 0) {
       setError("Enter a quantity greater than 0.");
@@ -166,52 +173,81 @@ export default function JoinDemandModal({ open, demand, onClose, onJoin }) {
                 </div>
               </div>
 
-              {/* Quantity form */}
-              <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="jd-qty" className="text-sm font-medium text-ink-soft">
-                    How much do you need?
-                    <span className="text-amber-600 ml-0.5" aria-hidden="true">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      ref={inputRef}
-                      id="jd-qty"
-                      type="number"
-                      min="0.5"
-                      step="0.5"
-                      placeholder={`e.g. 5 ${demand.unit}`}
-                      value={qty}
-                      onChange={(e) => {
-                        setQty(e.target.value);
-                        if (error) setError("");
-                      }}
-                      className={INPUT_CLS}
-                      aria-describedby={error ? "jd-qty-err" : "jd-qty-hint"}
-                      aria-invalid={!!error}
-                    />
-                    <span className="flex items-center shrink-0 font-mono text-sm text-ink-faint px-3 rounded-xl border border-forest-800/12 bg-canvas">
-                      {demand.unit}
-                    </span>
-                  </div>
-                  {error ? (
-                    <p id="jd-qty-err" className="text-xs text-amber-700" role="alert">{error}</p>
-                  ) : (
-                    <p id="jd-qty-hint" className="text-xs text-ink-faint">
-                      Up to {remaining} {demand.unit} available in this pool.
+              {/* If Farmer is viewing this */}
+              {isFarmer ? (
+                <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 flex flex-col gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <Sprout size={18} className="text-amber-700 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-900 leading-relaxed">
+                      You are signed in as a <strong>Farmer</strong>. Demand pools are joined by consumers. To fulfill this demand with your produce, commit supply from your Farmer Dashboard.
                     </p>
-                  )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="amber"
+                      size="md"
+                      className="flex-1"
+                      onClick={() => {
+                        onClose();
+                        navigate("/farmer");
+                      }}
+                    >
+                      Go to Farmer Dashboard
+                    </Button>
+                    <Button type="button" variant="outline" size="md" onClick={onClose} className="flex-1">
+                      Close
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                /* Consumer Quantity form */
+                <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="jd-qty" className="text-sm font-medium text-ink-soft">
+                      How much do you need?
+                      <span className="text-amber-600 ml-0.5" aria-hidden="true">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        ref={inputRef}
+                        id="jd-qty"
+                        type="number"
+                        min="0.5"
+                        step="0.5"
+                        placeholder={`e.g. 5 ${demand.unit}`}
+                        value={qty}
+                        onChange={(e) => {
+                          setQty(e.target.value);
+                          if (error) setError("");
+                        }}
+                        className={INPUT_CLS}
+                        aria-describedby={error ? "jd-qty-err" : "jd-qty-hint"}
+                        aria-invalid={!!error}
+                      />
+                      <span className="flex items-center shrink-0 font-mono text-sm text-ink-faint px-3 rounded-xl border border-forest-800/12 bg-canvas">
+                        {demand.unit}
+                      </span>
+                    </div>
+                    {error ? (
+                      <p id="jd-qty-err" className="text-xs text-amber-700" role="alert">{error}</p>
+                    ) : (
+                      <p id="jd-qty-hint" className="text-xs text-ink-faint">
+                        Up to {remaining} {demand.unit} available in this pool.
+                      </p>
+                    )}
+                  </div>
 
-                <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-                  <Button type="submit" variant="primary" size="md" className="flex-1">
-                    Confirm &amp; Join
-                  </Button>
-                  <Button type="button" variant="outline" size="md" onClick={handleClose} className="flex-1">
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+                  <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                    <Button type="submit" variant="primary" size="md" className="flex-1">
+                      Confirm &amp; Join
+                    </Button>
+                    <Button type="button" variant="outline" size="md" onClick={handleClose} className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
             </div>
           </>
         )}
